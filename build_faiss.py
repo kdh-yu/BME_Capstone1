@@ -2,7 +2,7 @@ import nibabel as nib
 import argparse
 import os
 import torch
-import torchvision.transforms as T
+import torchvision.transforms.functional as TF
 import numpy as np
 import faiss
 from PIL import Image
@@ -29,10 +29,8 @@ if args.register:
     reg = '_reg'
 dino = torch.hub.load('facebookresearch/dinov2', f'dinov2_{args.backbone}{reg}').to(device)
 
-datalist = os.listdir(args.data_path)
-chosen_data = np.random.choice(datalist, size=args.num_data)
+datalist = [i for i in os.listdir(args.data_path) if '_mask' not in i]
 ids = 0
-raw_filename = "sub-{}_ses-NFB3_T1w.nii.gz"
 
 faiss_data = {}
 
@@ -40,7 +38,7 @@ faiss_index = faiss.IndexIDMap(faiss.IndexFlatL2(384))
 feat_vectors = []
 
 for data in tqdm(datalist):
-    img = np.array(Image.open(os.path.join('./FAISS', data)))
+    img = TF.to_tensor(Image.open(os.path.join('./FAISS', data)))
     img = preprocessing_dinov2(img, input_shape=(266, 196)).unsqueeze(0).to(device)
     data_feat = dino.forward_features(img)['x_norm_clstoken']
     data_feat = data_feat.detach().cpu()
