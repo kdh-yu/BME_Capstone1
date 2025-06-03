@@ -1,5 +1,5 @@
 # Retrieval Augmented Few-shot Skull Stripping: Implementation and Evaluation
-202510HY10027 BME Capstone Design 1  
+202510HY11027 BME Capstone Design 1  
 Dohoon Kim, Jong-Min Lee
 
 ![pipeline](/src//img/pipeline.png)
