@@ -1,4 +1,9 @@
-NFBS_Dataset/
+data/
 FAISS/
 __pycache__/
-main.py
+not_used/
+log/
+checkpoints/
+A00053850/
+
+dataset.py

@@ -1,14 +1,11 @@
 # Libraries
 import faiss
-import nibabel as nib
-import matplotlib.pyplot as plt
 import torch
 import json
-from PIL import Image
 import torch.nn as nn
-import torchvision.transforms.functional as TF
+import numpy as np
 
-from preprocessing import preprocessing_dinov2, preprocessing_sam2, preprocessing_mask
+from processor import processor
 
 class Retrieval(nn.Module):
     def __init__(self,
@@ -19,35 +16,61 @@ class Retrieval(nn.Module):
         super().__init__()
         self.device = device
         self.index = faiss.read_index(faiss_index)
-        self.dino = torch.hub.load('facebookresearch/dinov2', dino_model).to(self.device)
+        self.dino = torch.hub.load('facebookresearch/dinov2', dino_model).to(self.device).eval()
         with open(faiss_json, 'r') as f:
             self.table = json.load(f)
-    
+            
     def forward(self, 
                 img: torch.Tensor,
                 n: int = 8):
-        img = preprocessing_dinov2(img)
-        img = img.unsqueeze(0)  # 배치차원 추가
-        img = img.to(self.device)
-
-        query = self.dino.forward_features(img)['x_norm_clstoken']
-        query = query.detach().cpu().numpy()
         
-        _, index = self.index.search(query, n)
+        img = processor(img, mode='dino')
+        img = img.unsqueeze(0) 
+        img = img.to(self.device)
+        
+        with torch.no_grad():
+            query = self.dino(img)
+        query = query.detach().cpu().numpy()
+        faiss.normalize_L2(query)
+        
+        dist, index = self.index.search(query, n)
         
         image_retrieval = []
         mask_retrieval = []
         
-        for i in index[0]:
-            image = Image.open('./FAISS/' + self.table[str(i)] + '.png')
-            image = preprocessing_sam2(image)
+        for i in reversed(index[0]):
+            if i == -1:
+                image = np.zeros((3, 256, 256))
+                mask = np.zeros((1, 256, 256))
+            else:
+                image = np.load('./FAISS/' + self.table[str(i)] + '.npy')
+                mask = np.load('./FAISS/' + self.table[str(i)] + '_mask.npy')
+                
+            image = processor(image, mode='sam')
             image_retrieval.append(image)
             
-            mask = Image.open('./FAISS/' + self.table[str(i)] + '_mask.png')
-            mask = preprocessing_mask(mask)
+            mask = processor(mask, mode='mask')
             mask_retrieval.append(mask)
             
         return {
             'image' : image_retrieval,
-            'mask'  : mask_retrieval
+            'mask'  : mask_retrieval,
+            'n'     : n
+        }
+        
+    def forward_manual(self, images, masks):
+        image_retrieval = []
+        mask_retrieval = []
+        
+        for img, msk in zip(images, masks):
+            img = processor(img, mode='sam').float()
+            image_retrieval.append(img)
+            
+            msk = processor(msk, mode='mask').float()
+            mask_retrieval.append(msk)
+        
+        return {
+            'image' : image_retrieval,
+            'mask'  : mask_retrieval,
+            'n'     : len(images)
         }
