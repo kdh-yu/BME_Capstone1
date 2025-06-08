@@ -1,12 +1,12 @@
 # Retrieval Augmented Few-shot Skull Stripping: Implementation and Evaluation
 202510HY11027 BME Capstone Design 1  
-Dohoon Kim, Jong-Min Lee
+Dohoon Kim, Jong-Min Lee 
+
+### [Poster](/src/poster.pdf)
 
 ![pipeline](/src//img/pipeline.png)
 
----
----
-# How to run?
+# How to run?  
 
 ## How to build faiss index?
 For more details, please check [```faiss.md```](faiss.md). 
