@@ -7,3 +7,4 @@ checkpoints/
 A00053850/
 
 dataset.py
+*.pt
