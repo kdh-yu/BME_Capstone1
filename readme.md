@@ -4,7 +4,7 @@ Dohoon Kim, Jong-Min Lee
 
 ### [Poster](/src/poster.pdf)
 
-![pipeline](/src//img/pipeline.png)
+![pipeline](/src/img/pipeline.png)
 
 # How to run?  
 
@@ -24,9 +24,9 @@ model = RAFS(faiss_index='BME_Capstone1/BME_faiss.index',
              n=8)
 
 # Load Data
-target_mri = nib.load('/home/kdh/code/BME_Capstone1/NFBS_Dataset/A00055447/sub-A00055447_ses-NFB3_T1w.nii.gz').get_fdata()
+target_mri = nib.load('BME_Capstone1/NFBS_Dataset/A00055447/sub-A00055447_ses-NFB3_T1w.nii.gz').get_fdata()
 target_mri = target_mri[:, 150, :]
-target_msk = nib.load('/home/kdh/code/BME_Capstone1/NFBS_Dataset/A00055447/sub-A00055447_ses-NFB3_T1w_brainmask.nii.gz').get_fdata()
+target_msk = nib.load('BME_Capstone1/NFBS_Dataset/A00055447/sub-A00055447_ses-NFB3_T1w_brainmask.nii.gz').get_fdata()
 target_msk = target_msk[:, 150, :]
 
 # Predict Mask
